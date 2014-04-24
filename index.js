@@ -112,13 +112,13 @@ function sanitize(s) {
  *   A two-element array containing the left and top pixel coordinates of the
  *   relevant element, respectively.
  */
-function getPos(ele){
+function getPos(ele) {
     var x = 0;
     var y = 0;
-    while (true){
+    while (true) {
         x += ele.offsetLeft;
         y += ele.offsetTop;
-        if (ele.offsetParent === null){
+        if (ele.offsetParent === null) {
             break;
         }
         ele = ele.offsetParent;
