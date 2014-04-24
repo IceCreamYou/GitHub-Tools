@@ -1,0 +1,109 @@
+html, body {
+  color: #333333;
+  font-family: Arial,sans-serif;
+  font-size: 24px;
+  line-height: 30px;
+}
+body {
+  background-color: #EEEEEE;
+  margin: 0;
+  overflow-y: scroll;
+  padding: 0;
+}
+#main {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  background-color: #DDDDDD;
+  border: 1px solid #333333;
+  box-sizing: border-box;
+  margin: 40px auto;
+  padding: 40px;
+  width: 960px;
+}
+h1 {
+  font-size: 40px;
+  margin: 0 0 30px;
+  text-align: center;
+}
+#info {
+  background-color: #FFEEEE;
+  border: 1px solid #333333;
+  font-size: 18px;
+  margin: 30px 0;
+  padding: 20px;
+}
+#here {
+  overflow-x: auto;
+}
+label {
+  font-weight: bold;
+}
+input {
+  font-size: 20px;
+}
+#username-field {
+  width: 202px;
+}
+#search-results {
+  background-color: #FAFAFA;
+  border: 1px solid #333333;
+  display: none;
+  min-width: 205px;
+  z-index: 2;
+}
+#search-results img {
+  padding-right: 12px;
+  width: 16px;
+}
+.suggestion {
+  border-bottom: 1px solid #333333;
+  padding: 4px 12px;
+}
+.suggestion:last-child,
+#results li:last-child {
+  border-bottom-width: 0;
+}
+.suggestion:hover {
+  background-color: #E6E6E6;
+  cursor: pointer;
+}
+#results {
+  clear: both;
+  margin-top: 30px;
+}
+#results ul {
+  border: 1px solid #333333;
+  margin: 0;
+  padding: 0;
+}
+#results li {
+  background-color: #D9D9D9;
+  border-bottom: 1px solid #333333;
+  clear: both;
+  list-style: none outside none;
+  margin: 0;
+  padding: 10px 58px 10px 20px;
+  position: relative;
+}
+#results li:nth-child(2n) {
+  background-color: #D6D6D6;
+}
+#results li:hover {
+  background-color: #E6E6E6;
+}
+a, a:visited {
+  color: #2244CC;
+}
+.why {
+  color: #555555;
+  font-size: 20px;
+  font-style: italic;
+}
+.search-user {
+  cursor: pointer;
+  height: 18px;
+  position: absolute;
+  right: 20px;
+  top: 17px;
+  width: 18px;
+}

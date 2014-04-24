@@ -1,0 +1,25 @@
+{
+  "name": "GitHub Connections",
+  "version": "1.0.0",
+  "description": "Shows users who are related to another user on GitHub.",
+  "homepage": "https://github.com/IceCreamYou/github-connections",
+  "bugs": "https://github.com/IceCreamYou/github-connections/issues",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/IceCreamYou/github-connections.git"
+  },
+  "keywords": [
+    "GitHub",
+    "connections",
+    "network",
+    "recruiting"
+  ],
+  "author": "Isaac Sukin (http://www.isaacsukin.com/)",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "devDependencies": {
+    "grunt": "~0.4.4",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-jscs-checker": "~0.4.1",
+  }
+}

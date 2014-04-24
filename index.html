@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>GitHub Connections</title>
+  <link href="index.css" media="all" rel="stylesheet" />
+</head>
+<body>
+  <div id="main">
+    <h1>GitHub Connections</h1>
+    <div id="info">
+      You should authenticate with Github to raise API rate limits from 60/hr to 5000/hr.
+      To do so, <a href="https://github.com/settings/applications/new" target="_blank">create a new application</a> using the following values:
+      <ul>
+        <li><strong>Application name:</strong> GitHub Connections</li>
+        <li><strong>Homepage URL:</strong> <em>your URL, e.g. http://localhost/ or https://icecreamyou.github.io/github-connections</em></li>
+        <li><strong>Description:</strong> <em>up to you, or just leave this blank</em></li>
+        <li><strong>Authorization callback URL:</strong> <em>this isn't used so just pick something like http://localhost/oauth</em></li>
+      </ul>
+      When you're done, you'll get a client ID and client secret.
+      If you're setting up your own instance of GitHub Connections, copy-paste those values into <code>config.js</code>.
+      Otherwise, change the URL of this page to include the values like this,
+      replacing <code>CLIENT_ID</code> and <code>CLIENT_SECRET</code> with your corresponding tokens:
+      <pre id="here">https://icecreamyou.github.io/github-connections/?client_id=CLIENT_ID&amp;client_secret=CLIENT_SECRET</pre>
+    </div>
+    <form action="index.html" accept-charset="UTF-8" method="post" id="search-form" enctype="multipart/form-data">
+      <div style="text-align: center;">
+        <label>Enter a Github username to explore:
+          <input type="text" id="username-field" />
+        </label>
+        <input type="submit" value="Search" />
+      </div>
+      <div id="search-results"></div>
+    </form>
+    <div id="results">
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
