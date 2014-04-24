@@ -1,5 +1,5 @@
 {
-  "name": "GitHub Connections",
+  "name": "GitHubConnections",
   "version": "1.0.0",
   "description": "Shows users who are related to another user on GitHub.",
   "homepage": "https://github.com/IceCreamYou/github-connections",
@@ -20,6 +20,6 @@
   "devDependencies": {
     "grunt": "~0.4.4",
     "grunt-contrib-jshint": "~0.10.0",
-    "grunt-jscs-checker": "~0.4.1",
+    "grunt-jscs-checker": "~0.4.1"
   }
 }

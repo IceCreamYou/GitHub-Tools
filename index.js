@@ -113,12 +113,12 @@ function sanitize(s) {
  *   relevant element, respectively.
  */
 function getPos(ele){
-    var x=0;
-    var y=0;
-    while(true){
+    var x = 0;
+    var y = 0;
+    while (true){
         x += ele.offsetLeft;
         y += ele.offsetTop;
-        if(ele.offsetParent === null){
+        if (ele.offsetParent === null){
             break;
         }
         ele = ele.offsetParent;
