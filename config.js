@@ -9,11 +9,26 @@
  * - Description: up to you, or just leave this blank
  * - Authorization callback URL: this isn't used so just pick something like http://localhost/oauth
  */
-var CLIENT_ID = '';
-var CLIENT_SECRET = '';
+CLIENT_ID = '';
+CLIENT_SECRET = '';
 
 /**
  * Whether to pop up an alert when a GitHub API request fails.
  * Either way the error will be logged to the console.
  */
 NOISY = false;
+
+/**
+ * Set how relatively important each kind of connection is.
+ */
+WEIGHTS = {
+  FOLLOWS: 0.75,
+  FOLLOWER: 0.5,
+  COLLABORATOR: 1.0,
+  COLLEAGUE: 0.3,
+  CONTRIBUTOR: 0.1,
+  CONTRIBUTEE: 0.15,
+  ISSUE_PARTICIPANT: 0.01,
+  FOLLOWED_REPO_MAINTAINER: 0.02,
+  REPO_FOLLOWER: 0.001,
+};
