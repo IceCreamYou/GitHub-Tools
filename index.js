@@ -34,7 +34,7 @@
   }
 })();
 
-var lastRateLimit = 0;
+var last403 = 0;
 
 /**
  * Request an API resource from GitHub.
@@ -47,7 +47,7 @@ var lastRateLimit = 0;
  * @return {XMLHttpRequest}
  *   The request object.
  */
-function loadAjax(url, callback) {
+function loadAjax(url, callback, err) {
   url = url + (/\?/g.test(url) ? '&' : '?') + 'client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET;
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function () {
@@ -61,18 +61,25 @@ function loadAjax(url, callback) {
           callback(xhr.responseText);
         }
       }
+      else if (xhr.status === 204) {
+        console.info('Request to ' + url + ' returned 204 No Content. This usually means the requested repo is empty.');
+        err(xhr);
+      }
       else if (xhr.status === 403) {
         try {
           var response = JSON.parse(xhr.responseText);
           console.error('Request to ' + url + ' denied: ' + response.message);
           var now = Date.now();
-          if (now - lastRateLimit > 3000) {
-            lastRateLimit = now;
+          if (now - last403 > 3000) {
+            last403 = now;
             alert(response.message);
           }
         }
         catch (e) {
           console.error('Request to ' + url + ' denied: ' + xhr.responseText);
+        }
+        finally {
+          err(xhr);
         }
       }
       else {
@@ -80,6 +87,7 @@ function loadAjax(url, callback) {
         if (window.NOISY) {
           alert('Unable to load [' + url + '] [' + xhr.status + ']');
         }
+        err(xhr);
       }
     }
   };
@@ -144,34 +152,11 @@ Node.prototype.equals = function(other) {
 Node.prototype.value = function() {
   var score = 0;
   for (var i = 0; i < this.types.length; i++) {
-    switch(this.types[i]) {
-      case Node.TYPES.FOLLOWS:
-        score += 0.75;
+    for (var type in Node.TYPES) {
+      if (Node.TYPES.hasOwnProperty(type) && this.types[i] == Node.TYPES[type]) {
+        score += WEIGHTS[type] || 0;
         break;
-      case Node.TYPES.FOLLOWER:
-        score += 0.5;
-        break;
-      case Node.TYPES.COLLABORATOR:
-        score += 1.0;
-        break;
-      case Node.TYPES.COLLEAGUE:
-        score += 0.3;
-        break;
-      case Node.TYPES.CONTRIBUTOR:
-        score += 0.1;
-        break;
-      case Node.TYPES.CONTRIBUTEE:
-        score += 0.15;
-        break;
-      case Node.TYPES.ISSUE_PARTICIPANT:
-        score += 0.01;
-        break;
-      case Node.TYPES.FOLLOWED_REPO_MAINTAINER:
-        score += 0.02;
-        break;
-      case Node.TYPES.REPO_FOLLOWER:
-        score += 0.001;
-        break;
+      }
     }
   }
   return score;
@@ -273,12 +258,18 @@ function submitSearch(event) {
     }
     found.FOLLOWS = true;
     checkDone();
+  }, function() {
+    found.FOLLOWS = true;
+    checkDone();
   });
   loadAjax('https://api.github.com/users/' + username + '/followers', function(followers) {
     for (var i = 0; i < followers.length; i++) {
       var f = followers[i];
       connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWER));
     }
+    found.FOLLOWER = true;
+    checkDone();
+  }, function() {
     found.FOLLOWER = true;
     checkDone();
   });
@@ -288,18 +279,22 @@ function submitSearch(event) {
       found.COLLEAGUE = true;
       checkDone();
     }
-    function getColleagues(members) {
-      for (j = 0; j < members.length; j++) {
-        var m = members[j];
-        connections.add(new Node(m.login, m.html_url, Node.TYPES.COLLEAGUE));
-      }
-      if (++numDone >= l) {
-        found.COLLEAGUE = true;
-        checkDone();
-      }
-    }
     for (var i = 0, numDone = 0, l = orgs.length; i < l; i++) {
-      loadAjax('https://api.github.com/orgs/' + encodeURIComponent(orgs[i].login) + '/members', getColleagues);
+      loadAjax('https://api.github.com/orgs/' + encodeURIComponent(orgs[i].login) + '/members', function(members) {
+        for (j = 0; j < members.length; j++) {
+          var m = members[j];
+          connections.add(new Node(m.login, m.html_url, Node.TYPES.COLLEAGUE));
+        }
+        if (++numDone >= l) {
+          found.COLLEAGUE = true;
+          checkDone();
+        }
+      }, function() {
+        if (++numDone >= l) {
+          found.COLLEAGUE = true;
+          checkDone();
+        }
+      });
     }
   });
   loadAjax('https://api.github.com/users/' + username + '/repos', function(repos) {
@@ -308,21 +303,26 @@ function submitSearch(event) {
       found.CONTRIBUTOR = true;
       checkDone();
     }
-    function getCollaborators(collaborators) {
-      var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
-      for (j = 0; j < collaborators.length; j++) {
-        var m = collaborators[j];
-        connections.add(new Node(m.login, m.html_url, type));
-      }
-      if (++numDone >= l) {
-        found.COLLABORATOR = true;
-        found.CONTRIBUTOR = true;
-        checkDone();
-      }
-    }
     for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
       var fork = repos[i].fork;
-      loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), getCollaborators);
+      loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
+        var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
+        for (j = 0; j < collaborators.length; j++) {
+          var m = collaborators[j];
+          connections.add(new Node(m.login, m.html_url, type));
+        }
+        if (++numDone >= l) {
+          found.COLLABORATOR = true;
+          found.CONTRIBUTOR = true;
+          checkDone();
+        }
+      }, function() {
+        if (++numDone >= l) {
+          found.COLLABORATOR = true;
+          found.CONTRIBUTOR = true;
+          checkDone();
+        }
+      });
     }
   });
 }
