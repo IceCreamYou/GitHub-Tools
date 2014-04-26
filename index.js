@@ -245,7 +245,32 @@ function submitSearch(event) {
     var output = ['<ul>'];
     connections.sort();
     connections.foreach(function(node) {
-      output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + node.types.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
+      var types = {}, seen = [];
+      for (var i = 0, l = node.types.length; i < l; i++) {
+        var t = node.types[i];
+        if (types.hasOwnProperty(t)) {
+          if (t === Node.TYPES.COLLEAGUE) {
+            types[t] = 'in the same organizations';
+            continue;
+          }
+          else if (t === Node.TYPES.COLLABORATOR) {
+            types[t] = 'shared commit access to multiple repos';
+            continue;
+          }
+          else if (t === Node.TYPES.CONTRIBUTOR) {
+            types[t] = 'this user contributed to repos %user maintains';
+            continue;
+          }
+        }
+        types[t] = t;
+      }
+      var s = [];
+      for (var key in types) {
+        if (types.hasOwnProperty(key)) {
+          s.push(types[key]);
+        }
+      }
+      output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
     }, 25);
     output.push('</ul>');
     document.getElementById('results').innerHTML = output.join("\n");
@@ -304,25 +329,26 @@ function submitSearch(event) {
       checkDone();
     }
     for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
-      var fork = repos[i].fork;
-      loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
-        var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
-        for (j = 0; j < collaborators.length; j++) {
-          var m = collaborators[j];
-          connections.add(new Node(m.login, m.html_url, type));
-        }
-        if (++numDone >= l) {
-          found.COLLABORATOR = true;
-          found.CONTRIBUTOR = true;
-          checkDone();
-        }
-      }, function() {
-        if (++numDone >= l) {
-          found.COLLABORATOR = true;
-          found.CONTRIBUTOR = true;
-          checkDone();
-        }
-      });
+      (function(fork) {
+        loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
+          var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
+          for (j = 0; j < collaborators.length; j++) {
+            var m = collaborators[j];
+            connections.add(new Node(m.login, m.html_url, type));
+          }
+          if (++numDone >= l) {
+            found.COLLABORATOR = true;
+            found.CONTRIBUTOR = true;
+            checkDone();
+          }
+        }, function() {
+          if (++numDone >= l) {
+            found.COLLABORATOR = true;
+            found.CONTRIBUTOR = true;
+            checkDone();
+          }
+        });
+      })(repos[i].fork);
     }
   });
 }
