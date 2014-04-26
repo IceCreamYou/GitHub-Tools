@@ -76,8 +76,8 @@ function processRepos(repos, searchValue) {
                 }
                 results.push([
                     t,
-                    '<a href="' + sanitize(r['html_url']) + '">' +
-                        sanitize(r['name']) +
+                    '<a href="' + sanitize(r.html_url) + '">' +
+                        sanitize(r.name) +
                     '</a>' +
                     (r.fork ? '<span class="fork">[FORK]</span>' : '') +
                     '<span class="repo-stats">' +

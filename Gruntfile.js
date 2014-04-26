@@ -3,11 +3,14 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     jshint: {
       options: {
+        loopfunc: true,
         trailing: true
       },
       target: {
         src : [
-               'index.js'
+               'common.js',
+               'connections.js',
+               'loc.js'
                ]
       }
     },
@@ -16,7 +19,9 @@ module.exports = function(grunt) {
         config: '.jscs.json'
       },
       main: [
-               'index.js'
+             'common.js',
+             'connections.js',
+             'loc.js'
              ]
     }
   });
