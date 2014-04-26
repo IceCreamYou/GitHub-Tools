@@ -6,6 +6,11 @@
  * TODO: Figure out how to capture commits to repos the principal doesn't
  *   maintain. One way may be to search through issues using ?involves:
  *   https://developer.github.com/v3/search/#search-issues
+ *   It may also be the case that (1) all repos you have commit access to show
+ *   up at /user/:name/repos, (2) all repos for orgs you're not in that you've
+ *   landed commits in require having a fork, and (3) it might be possible to
+ *   commit to org repos without those showing up at /user/:name/repos if
+ *   you're in the org. So, we can follow those paths to get the relevant repos.
  * TODO: Follow pagination if there are too many results for queries
  * TODO: Set up a server to authenticate people for the demo without exposing
  *   my client secret. Resources:
@@ -95,7 +100,7 @@ function loadAjax(url, callback, complete) {
       // 301, 302, and 307 will automatically be followed.
       // Other known possible status codes:
       // 201 (resource created; we're not doing that here)
-      // 202 (request to fork repo accepted; we're not doing that here)
+      // 202 (request accepted but performed asynchronously and can't return immediately)
       // 205 (notifications marked as read; we're not doing that here)
       // 401 (invalid login)
       // 400 or 422 (invalid request parameters)
@@ -285,7 +290,7 @@ function submitSearch(event) {
         }
       }
       output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
-    }, 25);
+    }, NUM_RESULTS);
     output.push('</ul>');
     document.getElementById('results').innerHTML = output.join("\n");
   }

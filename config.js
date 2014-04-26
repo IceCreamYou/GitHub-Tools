@@ -25,3 +25,8 @@ WEIGHTS = {
   FOLLOWED_REPO_MAINTAINER: 2, // People star a lot of repos they think are interesting and don't necessarily know the maintainers.
   REPO_FOLLOWER: 0.1, // A maintainer is even less likely to know the people following their repos.
 };
+
+/**
+ * Show this many connections, sorted by best match.
+ */
+NUM_RESULTS = 25;
