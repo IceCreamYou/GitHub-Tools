@@ -27,6 +27,11 @@ WEIGHTS = {
 };
 
 /**
- * Show this many connections, sorted by best match.
+ * Show up to this many connections, sorted by best match.
  */
 NUM_RESULTS = 25;
+
+/**
+ * Show up to this many most-used languages.
+ */
+NUM_LANGUAGES = 5;
