@@ -54,8 +54,8 @@ function processRepos(repos, searchValue) {
         openIssues += r.open_issues_count >>> 0;
         if (r.language) {
             // Since we're taking the language straight from the response,
-            // prefix it with __ so we don't accidentally overwrite any object properties
-            languages['__' + r.language] = (languages['__' + r.language] >>> 0) + 1;
+            // prefix it with ___ so we don't accidentally overwrite any object properties
+            languages['___' + r.language] = (languages['___' + r.language] >>> 0) + 1;
         }
         (function(r) {
             loadAjax('https://api.github.com/repos/' + encodeURIComponent(r.owner.login) + '/' + encodeURIComponent(r.name) + '/stats/contributors', function(stats) {
@@ -124,7 +124,7 @@ function processRepos(repos, searchValue) {
                     }).slice(0, NUM_LANGUAGES);
                     var s = [];
                     for (var j = 0; j < langs.length; j++) {
-                        s.push(langs[j].substring(2) + ' (' + languages[langs[j]] + ')');
+                        s.push(langs[j].substring(3) + ' (' + sanitize(languages[langs[j]]) + ')');
                     }
                     document.getElementById('results').innerHTML =
                         '<p class="summary">' + rl + ' repositories<br />' +
