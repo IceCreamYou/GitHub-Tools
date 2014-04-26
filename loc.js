@@ -74,10 +74,10 @@ function processRepos(repos, searchValue) {
                 if (!unit) {
                     results.push([
                         0,
-                        '<a href="' + sanitize(r.html_url) + '">' +
+                        '<span><a href="' + sanitize(r.html_url) + '">' +
                             sanitize(r.name) +
                         '</a>' +
-                        (r.fork ? '<span class="fork">[FORK]</span>' : '') +
+                        (r.fork ? '<span class="fork">[FORK]</span>' : '') + '</span>' +
                         '<span class="repo-stats">' +
                             '<span class="added">A: 0</span><span class="removed">R: 0</span><span>N: 0</span><span class="total">T: 0</span>' +
                         '</span>'
@@ -106,10 +106,10 @@ function processRepos(repos, searchValue) {
                 }
                 results.push([
                     t,
-                    '<a href="' + sanitize(r.html_url) + '">' +
+                    '<span><a href="' + sanitize(r.html_url) + '">' +
                         sanitize(r.name) +
                     '</a>' +
-                    (r.fork ? '<span class="fork">[FORK]</span>' : '') +
+                    (r.fork ? '<span class="fork">[FORK]</span>' : '') + '</span>' +
                     '<span class="repo-stats">' +
                         '<span class="added">A: ' + putCommas(a) + '</span>' +
                         '<span class="removed">R: ' + putCommas(d) + '</span>' +
