@@ -322,7 +322,7 @@ function submitSearch(event) {
       });
     }
   });
-  loadAjax('https://api.github.com/users/' + username + '/repos', function(repos) {
+  loadAjax('https://api.github.com/users/' + username + '/repos?type=all', function(repos) {
     if (!repos.length) {
       found.COLLABORATOR = true;
       found.CONTRIBUTOR = true;
@@ -330,6 +330,10 @@ function submitSearch(event) {
     }
     for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
       (function(fork) {
+        // For forks we want the people with commit access to the *fork*, i.e. /collaborators.
+        // For forks, /contributors shows everyone who has landed commits in the original repo, and the principal doesn't necessarily know them.
+        // Not all collaborators are necessarily contributors; just because you have commit access doesn't mean you've committed.
+        // However, I think it's safe to assume that we'll capture the important relationships via /contributors for non-forks.
         loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
           var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
           for (j = 0; j < collaborators.length; j++) {
