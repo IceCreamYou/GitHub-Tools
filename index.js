@@ -24,25 +24,25 @@
 // Get the client ID and secret from the URL if they're not provided in config.
 // This lets people try the demo.
 (function() {
-  var matches;
-  if (!window.CLIENT_ID) {
-    matches = /[?&]client_id=([^&#]+)/.exec(location.search);
-    if (matches && matches[1]) {
-      window.CLIENT_ID = matches[1];
+    var matches;
+    if (!window.CLIENT_ID) {
+        matches = /[?&]client_id=([^&#]+)/.exec(location.search);
+        if (matches && matches[1]) {
+            window.CLIENT_ID = matches[1];
+        }
+        else {
+            window.CLIENT_ID = '';
+        }
     }
-    else {
-      window.CLIENT_ID = '';
+    if (!window.CLIENT_SECRET) {
+        matches = /[?&]client_secret=([^&#]+)/.exec(location.search);
+        if (matches && matches[1]) {
+            window.CLIENT_SECRET = matches[1];
+        }
+        else {
+            window.CLIENT_SECRET = '';
+        }
     }
-  }
-  if (!window.CLIENT_SECRET) {
-    matches = /[?&]client_secret=([^&#]+)/.exec(location.search);
-    if (matches && matches[1]) {
-      window.CLIENT_SECRET = matches[1];
-    }
-    else {
-      window.CLIENT_SECRET = '';
-    }
-  }
 })();
 
 var last403 = 0;
@@ -59,72 +59,72 @@ var last403 = 0;
  *   The request object.
  */
 function loadAjax(url, callback, complete) {
-  url = url + (/\?/g.test(url) ? '&' : '?') + 'client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET;
-  var xhr = new XMLHttpRequest(), success = false;
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === xhr.DONE) {
-      // Request completed successfully
-      if (xhr.status === 200 || xhr.status === 0) {
-        try {
-          var json = JSON.parse(xhr.responseText);
-          callback(json);
+    url = url + (/\?/g.test(url) ? '&' : '?') + 'client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET;
+    var xhr = new XMLHttpRequest(), success = false;
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === xhr.DONE) {
+            // Request completed successfully
+            if (xhr.status === 200 || xhr.status === 0) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    callback(json);
+                }
+                catch (e) {
+                    callback(xhr.responseText);
+                }
+                success = true;
+            }
+            // Requested repo is empty (204) or still being created (409); ignore
+            else if (xhr.status === 204 || xhr.status === 409) {
+                console.info('Request to ' + url + ' returned 204 No Content. This usually means the requested repo is empty.');
+            }
+            // For our uses, 403 usually indicates a rate limiting error
+            else if (xhr.status === 403) {
+                try {
+                    var response = JSON.parse(xhr.responseText);
+                    console.error('Request to ' + url + ' denied: ' + response.message);
+                    var now = Date.now();
+                    if (now - last403 > 3000) {
+                        last403 = now;
+                        alert(response.message);
+                    }
+                }
+                catch (e) {
+                    console.error('Request to ' + url + ' denied: ' + xhr.responseText);
+                }
+            }
+            else if (xhr.status > 499) {
+                console.error('Request to ' + url + ' failed with code ' + xhr.status + ' because of a server error.');
+            }
+            // Browsers seem to handle 304 as serving a 200 from the cache.
+            // 301, 302, and 307 will automatically be followed.
+            // Other known possible status codes:
+            // 201 (resource created; we're not doing that here)
+            // 202 (request accepted but performed asynchronously and can't return immediately)
+            // 205 (notifications marked as read; we're not doing that here)
+            // 401 (invalid login)
+            // 400 or 422 (invalid request parameters)
+            // 404 (hidden data or endpoint does not exist)
+            // 405 (merge cannot be performed; we're not doing that here)
+            else {
+                console.error('Unable to load [' + url + '] [' + xhr.status + ']');
+            }
+            if (typeof complete === 'function') complete(xhr, success, url);
         }
-        catch (e) {
-          callback(xhr.responseText);
-        }
-        success = true;
-      }
-      // Requested repo is empty (204) or still being created (409); ignore
-      else if (xhr.status === 204 || xhr.status === 409) {
-        console.info('Request to ' + url + ' returned 204 No Content. This usually means the requested repo is empty.');
-      }
-      // For our uses, 403 usually indicates a rate limiting error
-      else if (xhr.status === 403) {
-        try {
-          var response = JSON.parse(xhr.responseText);
-          console.error('Request to ' + url + ' denied: ' + response.message);
-          var now = Date.now();
-          if (now - last403 > 3000) {
-            last403 = now;
-            alert(response.message);
-          }
-        }
-        catch (e) {
-          console.error('Request to ' + url + ' denied: ' + xhr.responseText);
-        }
-      }
-      else if (xhr.status > 499) {
-        console.error('Request to ' + url + ' failed with code ' + xhr.status + ' because of a server error.');
-      }
-      // Browsers seem to handle 304 as serving a 200 from the cache.
-      // 301, 302, and 307 will automatically be followed.
-      // Other known possible status codes:
-      // 201 (resource created; we're not doing that here)
-      // 202 (request accepted but performed asynchronously and can't return immediately)
-      // 205 (notifications marked as read; we're not doing that here)
-      // 401 (invalid login)
-      // 400 or 422 (invalid request parameters)
-      // 404 (hidden data or endpoint does not exist)
-      // 405 (merge cannot be performed; we're not doing that here)
-      else {
-        console.error('Unable to load [' + url + '] [' + xhr.status + ']');
-      }
-      if (typeof complete === 'function') complete(xhr, success, url);
-    }
-  };
+    };
 
-  xhr.open('GET', url, true);
-  xhr.send(null);
-  return xhr;
+    xhr.open('GET', url, true);
+    xhr.send(null);
+    return xhr;
 }
 
 /**
  * HTML-escape a string.
  */
 function sanitize(s) {
-  var d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML.replace(/"/g, '&quot;');
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML.replace(/"/g, '&quot;');
 }
 
 /**
@@ -163,301 +163,301 @@ function getPos(ele) {
  * @param {String} type One of `Node.TYPES`.
  */
 function Node(name, url, type) {
-  this.name = name;
-  this.url = url;
-  this.types = [type];
+    this.name = name;
+    this.url = url;
+    this.types = [type];
 }
 Node.prototype.equals = function(other) {
-  return other && other instanceof Node && other.name == this.name;
+    return other && other instanceof Node && other.name == this.name;
 };
 Node.prototype.value = function() {
-  var score = 0;
-  for (var i = 0; i < this.types.length; i++) {
-    for (var type in Node.TYPES) {
-      if (Node.TYPES.hasOwnProperty(type) && this.types[i] == Node.TYPES[type]) {
-        score += WEIGHTS[type] || 0;
-        break;
-      }
+    var score = 0;
+    for (var i = 0; i < this.types.length; i++) {
+        for (var type in Node.TYPES) {
+            if (Node.TYPES.hasOwnProperty(type) && this.types[i] == Node.TYPES[type]) {
+                score += WEIGHTS[type] || 0;
+                break;
+            }
+        }
     }
-  }
-  return score;
+    return score;
 };
 Node.TYPES = {
-  FOLLOWS: '%user follows this user',
-  FOLLOWER: 'this user follows %user',
-  COLLABORATOR: 'shared commit access',
-  COLLEAGUE: 'in the same organization',
-  CONTRIBUTOR: 'this user contributed to a repo %user maintains',
-  ISSUE_PARTICIPANT: 'participated in same issues',
-  FOLLOWED_REPO_MAINTAINER: 'maintains a repo %user follows',
-  REPO_FOLLOWER: 'follows repos %user maintains',
-  // TODO: Add some sort of network analysis (mutual follows)
+    FOLLOWS: '%user follows this user',
+    FOLLOWER: 'this user follows %user',
+    COLLABORATOR: 'shared commit access',
+    COLLEAGUE: 'in the same organization',
+    CONTRIBUTOR: 'this user contributed to a repo %user maintains',
+    ISSUE_PARTICIPANT: 'participated in same issues',
+    FOLLOWED_REPO_MAINTAINER: 'maintains a repo %user follows',
+    REPO_FOLLOWER: 'follows repos %user maintains',
+    // TODO: Add some sort of network analysis (mutual follows)
 };
 
 /**
  * A set of {@link Node}s.
  */
 function Set(exclude) {
-  this.nodes = [];
-  this.exclude = exclude;
+    this.nodes = [];
+    this.exclude = exclude;
 }
 Set.prototype.add = function(node) {
-  if (!node || !(node instanceof Node)) return;
-  if (this.exclude && node.name === this.exclude) return;
-  for (var i = 0, l = this.nodes.length; i < l; i++) {
-    if (this.nodes[i].equals(node)) {
-      this.nodes[i].types.push(node.types[0]);
-      return;
+    if (!node || !(node instanceof Node)) return;
+    if (this.exclude && node.name === this.exclude) return;
+    for (var i = 0, l = this.nodes.length; i < l; i++) {
+        if (this.nodes[i].equals(node)) {
+            this.nodes[i].types.push(node.types[0]);
+            return;
+        }
     }
-  }
-  this.nodes.push(node);
+    this.nodes.push(node);
 };
 Set.prototype.remove = function(node) {
-  for (var i = this.nodes.length-1; i >= 0; i--) {
-    if (this.nodes[i].equals(node)) {
-      this.nodes.splice(i, 1);
+    for (var i = this.nodes.length-1; i >= 0; i--) {
+        if (this.nodes[i].equals(node)) {
+            this.nodes.splice(i, 1);
+        }
     }
-  }
 };
 // Sort by descending "friend" value
 Set.prototype.sort = function() {
-  this.nodes.sort(function(a, b) {
-    return b.value() - a.value();
-  });
+    this.nodes.sort(function(a, b) {
+        return b.value() - a.value();
+    });
 };
 Set.prototype.foreach = function(callback, num) {
-  for (var i = 0, l = Math.min(num || Infinity, this.nodes.length); i < l; i++) {
-    callback(this.nodes[i]);
-  }
+    for (var i = 0, l = Math.min(num || Infinity, this.nodes.length); i < l; i++) {
+        callback(this.nodes[i]);
+    }
 };
 
 /**
  * Get the requested user's GitHub connections.
  */
 function submitSearch(event) {
-  if (event) event.preventDefault();
-  document.getElementById('search-results').style.display = 'none';
-  var searchValue = document.getElementById('username-field').value;
-  var username = encodeURIComponent(searchValue);
-  var connections = new Set(searchValue);
-  var found = {
-    FOLLOWS: false,
-    FOLLOWER: false,
-    COLLABORATOR: false,
-    COLLEAGUE: false,
-    CONTRIBUTOR: false,
-    //ISSUE_PARTICIPANT: false, // (infeasible for now)
-    //FOLLOWED_REPO_MAINTAINER: false, // starred_url, subscriptions_url (not a significant source of knowledge)
-    //REPO_FOLLOWER: false, // repos -> followers (infeasible for now)
-  };
-  function checkDone() {
-    for (var criteria in found) {
-      if (found.hasOwnProperty(criteria)) {
-        if (!found[criteria]) {
-          return;
+    if (event) event.preventDefault();
+    document.getElementById('search-results').style.display = 'none';
+    var searchValue = document.getElementById('username-field').value;
+    var username = encodeURIComponent(searchValue);
+    var connections = new Set(searchValue);
+    var found = {
+        FOLLOWS: false,
+        FOLLOWER: false,
+        COLLABORATOR: false,
+        COLLEAGUE: false,
+        CONTRIBUTOR: false,
+        //ISSUE_PARTICIPANT: false, // (infeasible for now)
+        //FOLLOWED_REPO_MAINTAINER: false, // starred_url, subscriptions_url (not a significant source of knowledge)
+        //REPO_FOLLOWER: false, // repos -> followers (infeasible for now)
+    };
+    function checkDone() {
+        for (var criteria in found) {
+            if (found.hasOwnProperty(criteria)) {
+                if (!found[criteria]) {
+                    return;
+                }
+            }
         }
-      }
+        done();
     }
-    done();
-  }
-  function done() {
-    var output = ['<ul>'];
-    connections.sort();
-    connections.foreach(function(node) {
-      var types = {}, seen = [];
-      for (var i = 0, l = node.types.length; i < l; i++) {
-        var t = node.types[i];
-        if (types.hasOwnProperty(t)) {
-          if (t === Node.TYPES.COLLEAGUE) {
-            types[t] = 'in the same organizations';
-            continue;
-          }
-          else if (t === Node.TYPES.COLLABORATOR) {
-            types[t] = 'shared commit access to multiple repos';
-            continue;
-          }
-          else if (t === Node.TYPES.CONTRIBUTOR) {
-            types[t] = 'this user contributed to repos %user maintains';
-            continue;
-          }
-        }
-        types[t] = t;
-      }
-      var s = [];
-      for (var key in types) {
-        if (types.hasOwnProperty(key)) {
-          s.push(types[key]);
-        }
-      }
-      output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
-    }, NUM_RESULTS);
-    output.push('</ul>');
-    document.getElementById('results').innerHTML = output.join("\n");
-  }
+    function done() {
+        var output = ['<ul>'];
+        connections.sort();
+        connections.foreach(function(node) {
+            var types = {}, seen = [];
+            for (var i = 0, l = node.types.length; i < l; i++) {
+                var t = node.types[i];
+                if (types.hasOwnProperty(t)) {
+                    if (t === Node.TYPES.COLLEAGUE) {
+                        types[t] = 'in the same organizations';
+                        continue;
+                    }
+                    else if (t === Node.TYPES.COLLABORATOR) {
+                        types[t] = 'shared commit access to multiple repos';
+                        continue;
+                    }
+                    else if (t === Node.TYPES.CONTRIBUTOR) {
+                        types[t] = 'this user contributed to repos %user maintains';
+                        continue;
+                    }
+                }
+                types[t] = t;
+            }
+            var s = [];
+            for (var key in types) {
+                if (types.hasOwnProperty(key)) {
+                    s.push(types[key]);
+                }
+            }
+            output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
+        }, NUM_RESULTS);
+        output.push('</ul>');
+        document.getElementById('results').innerHTML = output.join("\n");
+    }
 
-  loadAjax('https://api.github.com/users/' + username + '/following', function(followings) {
-    for (var i = 0; i < followings.length; i++) {
-      var f = followings[i];
-      connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWS));
-    }
-  }, function() {
-    found.FOLLOWS = true;
-    checkDone();
-  });
-  loadAjax('https://api.github.com/users/' + username + '/followers', function(followers) {
-    for (var i = 0; i < followers.length; i++) {
-      var f = followers[i];
-      connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWER));
-    }
-  }, function() {
-    found.FOLLOWER = true;
-    checkDone();
-  });
-  // TODO: Also check company ('https://api.github.com/users/' + username -> result.company)
-  loadAjax('https://api.github.com/users/' + username + '/orgs', function(orgs) {
-    if (!orgs.length) {
-      found.COLLEAGUE = true;
-      checkDone();
-    }
-    for (var i = 0, numDone = 0, l = orgs.length; i < l; i++) {
-      loadAjax('https://api.github.com/orgs/' + encodeURIComponent(orgs[i].login) + '/members', function(members) {
-        for (j = 0; j < members.length; j++) {
-          var m = members[j];
-          connections.add(new Node(m.login, m.html_url, Node.TYPES.COLLEAGUE));
+    loadAjax('https://api.github.com/users/' + username + '/following', function(followings) {
+        for (var i = 0; i < followings.length; i++) {
+            var f = followings[i];
+            connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWS));
         }
-      }, function() {
-        if (++numDone >= l) {
-          found.COLLEAGUE = true;
-          checkDone();
+    }, function() {
+        found.FOLLOWS = true;
+        checkDone();
+    });
+    loadAjax('https://api.github.com/users/' + username + '/followers', function(followers) {
+        for (var i = 0; i < followers.length; i++) {
+            var f = followers[i];
+            connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWER));
         }
-      });
-    }
-  }, function(xhr, success) {
-    // If we didn't run the success callback, something's wrong,
-    // but we should bail on this section and display the results we have anyway.
-    if (!success) {
-      found.COLLEAGUE = true;
-      checkDone();
-    }
-  });
-  loadAjax('https://api.github.com/users/' + username + '/repos?type=all', function(repos) {
-    if (!repos.length) {
-      found.COLLABORATOR = true;
-      found.CONTRIBUTOR = true;
-      checkDone();
-    }
-    for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
-      (function(fork) {
-        // For forks we want the people with commit access to the *fork*, i.e. /collaborators.
-        // For forks, /contributors shows everyone who has landed commits in the original repo, and the principal doesn't necessarily know them.
-        // Not all collaborators are necessarily contributors; just because you have commit access doesn't mean you've committed.
-        // However, I think it's safe to assume that we'll capture the important relationships via /contributors for non-forks.
-        loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
-          var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
-          for (j = 0; j < collaborators.length; j++) {
-            var m = collaborators[j];
-            connections.add(new Node(m.login, m.html_url, type));
-          }
-        }, function() {
-          if (++numDone >= l) {
+    }, function() {
+        found.FOLLOWER = true;
+        checkDone();
+    });
+    // TODO: Also check company ('https://api.github.com/users/' + username -> result.company)
+    loadAjax('https://api.github.com/users/' + username + '/orgs', function(orgs) {
+        if (!orgs.length) {
+            found.COLLEAGUE = true;
+            checkDone();
+        }
+        for (var i = 0, numDone = 0, l = orgs.length; i < l; i++) {
+            loadAjax('https://api.github.com/orgs/' + encodeURIComponent(orgs[i].login) + '/members', function(members) {
+                for (j = 0; j < members.length; j++) {
+                    var m = members[j];
+                    connections.add(new Node(m.login, m.html_url, Node.TYPES.COLLEAGUE));
+                }
+            }, function() {
+                if (++numDone >= l) {
+                    found.COLLEAGUE = true;
+                    checkDone();
+                }
+            });
+        }
+    }, function(xhr, success) {
+        // If we didn't run the success callback, something's wrong,
+        // but we should bail on this section and display the results we have anyway.
+        if (!success) {
+            found.COLLEAGUE = true;
+            checkDone();
+        }
+    });
+    loadAjax('https://api.github.com/users/' + username + '/repos?type=all', function(repos) {
+        if (!repos.length) {
             found.COLLABORATOR = true;
             found.CONTRIBUTOR = true;
             checkDone();
-          }
-        });
-      })(repos[i].fork);
-    }
-  }, function(xhr, success) {
-    // If we didn't run the success callback, something's wrong,
-    // but we should bail on this section and display the results we have anyway.
-    if (!success) {
-      found.COLLABORATOR = true;
-      found.CONTRIBUTOR = true;
-      checkDone();
-    }
-  });
+        }
+        for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
+            (function(fork) {
+                // For forks we want the people with commit access to the *fork*, i.e. /collaborators.
+                // For forks, /contributors shows everyone who has landed commits in the original repo, and the principal doesn't necessarily know them.
+                // Not all collaborators are necessarily contributors; just because you have commit access doesn't mean you've committed.
+                // However, I think it's safe to assume that we'll capture the important relationships via /contributors for non-forks.
+                loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
+                    var type = fork ? Node.TYPES.COLLABORATOR : Node.TYPES.CONTRIBUTOR;
+                    for (j = 0; j < collaborators.length; j++) {
+                        var m = collaborators[j];
+                        connections.add(new Node(m.login, m.html_url, type));
+                    }
+                }, function() {
+                    if (++numDone >= l) {
+                        found.COLLABORATOR = true;
+                        found.CONTRIBUTOR = true;
+                        checkDone();
+                    }
+                });
+            })(repos[i].fork);
+        }
+    }, function(xhr, success) {
+        // If we didn't run the success callback, something's wrong,
+        // but we should bail on this section and display the results we have anyway.
+        if (!success) {
+            found.COLLABORATOR = true;
+            found.CONTRIBUTOR = true;
+            checkDone();
+        }
+    });
 }
 
 window.onload = function() {
-  document.getElementById('here').textContent = location.href + (/\?/g.test(location.href) ? '&' : '?') + 'client_id=CLIENT_ID&client_secret=CLIENT_SECRET';
-  if (window.CLIENT_ID && window.CLIENT_SECRET) {
-    document.getElementById('info').style.display = 'none';
-  }
-
-  var elem = document.getElementById('username-field'),
-      move = document.getElementById('search-results');
-  var o = getPos(elem);
-  move.style.position = 'absolute';
-  move.style.left = o[0] + 'px';
-  move.style.top = (o[1] + elem.offsetHeight) + 'px';
-
-  var matches = /[?&]user=([^&#]+)/.exec(location.search);
-  if (matches && matches[1]) {
-    document.getElementById('username-field').value = matches[1];
-    submitSearch();
-  }
-
-  document.getElementById('search-form').addEventListener('submit', submitSearch);
-
-  var lastTimeout = null,
-      lastXHR = null,
-      lastInput = '';
-  document.getElementById('search-form').addEventListener('keyup', function(event) {
-    event.preventDefault();
-    var div = document.getElementById('search-results');
-    var searchValue = document.getElementById('username-field').value;
-    if (searchValue.length < 2) {
-      if (lastTimeout) clearTimeout(lastTimeout);
-      if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
-      div.style.display = 'none';
-      return;
+    document.getElementById('here').textContent = location.href + (/\?/g.test(location.href) ? '&' : '?') + 'client_id=CLIENT_ID&client_secret=CLIENT_SECRET';
+    if (window.CLIENT_ID && window.CLIENT_SECRET) {
+        document.getElementById('info').style.display = 'none';
     }
-    if (searchValue === lastInput) {
-      return;
-    }
-    lastInput = searchValue;
-    var username = encodeURIComponent(searchValue);
 
-    if (lastTimeout) clearTimeout(lastTimeout);
-    lastTimeout = setTimeout(function() {
-      if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
-      lastXHR = loadAjax('https://api.github.com/search/users?per_page=10&q=' + username, function(results) {
-        var users = [];
-        for (var i = 0, l = results.items.length; i < l; i++) {
-          var u = results.items[i], n = sanitize(u.login);
-          users.push('<div class="suggestion" data-name="' + encodeURIComponent(u.login) + '"><img src="' + sanitize(u.avatar_url) + '" alt="' + n + '\'s avatar" /><span class="suggest-name">' + n + '</span></div>');
+    var elem = document.getElementById('username-field'),
+        move = document.getElementById('search-results');
+    var o = getPos(elem);
+    move.style.position = 'absolute';
+    move.style.left = o[0] + 'px';
+    move.style.top = (o[1] + elem.offsetHeight) + 'px';
+
+    var matches = /[?&]user=([^&#]+)/.exec(location.search);
+    if (matches && matches[1]) {
+        document.getElementById('username-field').value = matches[1];
+        submitSearch();
+    }
+
+    document.getElementById('search-form').addEventListener('submit', submitSearch);
+
+    var lastTimeout = null,
+        lastXHR = null,
+        lastInput = '';
+    document.getElementById('search-form').addEventListener('keyup', function(event) {
+        event.preventDefault();
+        var div = document.getElementById('search-results');
+        var searchValue = document.getElementById('username-field').value;
+        if (searchValue.length < 2) {
+            if (lastTimeout) clearTimeout(lastTimeout);
+            if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
+            div.style.display = 'none';
+            return;
         }
-        if (users.length) {
-          div.innerHTML = users.join('');
-          div.style.display = 'block';
+        if (searchValue === lastInput) {
+            return;
         }
-        else {
-          div.style.display = 'none';
+        lastInput = searchValue;
+        var username = encodeURIComponent(searchValue);
+
+        if (lastTimeout) clearTimeout(lastTimeout);
+        lastTimeout = setTimeout(function() {
+            if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
+            lastXHR = loadAjax('https://api.github.com/search/users?per_page=10&q=' + username, function(results) {
+                var users = [];
+                for (var i = 0, l = results.items.length; i < l; i++) {
+                    var u = results.items[i], n = sanitize(u.login);
+                    users.push('<div class="suggestion" data-name="' + encodeURIComponent(u.login) + '"><img src="' + sanitize(u.avatar_url) + '" alt="' + n + '\'s avatar" /><span class="suggest-name">' + n + '</span></div>');
+                }
+                if (users.length) {
+                    div.innerHTML = users.join('');
+                    div.style.display = 'block';
+                }
+                else {
+                    div.style.display = 'none';
+                }
+            });
+        }, 250);
+    });
+
+    document.getElementById('search-results').addEventListener('click', function(event) {
+        event.preventDefault();
+        var elem = event.target;
+        if (elem && elem.nodeName.toLowerCase() != 'div') {
+            elem = elem.parentNode;
         }
-      });
-    }, 250);
-  });
+        if (elem.nodeName.toLowerCase() == 'div' && ~elem.className.indexOf('suggestion')) {
+            document.getElementById('username-field').value = decodeURIComponent(elem.getAttribute('data-name'));
+            this.style.display = 'none';
+            submitSearch();
+        }
+    });
 
-  document.getElementById('search-results').addEventListener('click', function(event) {
-    event.preventDefault();
-    var elem = event.target;
-    if (elem && elem.nodeName.toLowerCase() != 'div') {
-      elem = elem.parentNode;
-    }
-    if (elem.nodeName.toLowerCase() == 'div' && ~elem.className.indexOf('suggestion')) {
-      document.getElementById('username-field').value = decodeURIComponent(elem.getAttribute('data-name'));
-      this.style.display = 'none';
-      submitSearch();
-    }
-  });
-
-  document.getElementById('results').addEventListener('click', function(event) {
-    event.preventDefault();
-    var elem = event.target;
-    if (elem && elem.nodeName.toLowerCase() == 'img' && ~elem.className.indexOf('search-user')) {
-      document.getElementById('username-field').value = decodeURIComponent(elem.getAttribute('data-name'));
-      submitSearch();
-      document.body.scrollTop = document.documentElement.scrollTop = 0;
-    }
-  });
+    document.getElementById('results').addEventListener('click', function(event) {
+        event.preventDefault();
+        var elem = event.target;
+        if (elem && elem.nodeName.toLowerCase() == 'img' && ~elem.className.indexOf('search-user')) {
+            document.getElementById('username-field').value = decodeURIComponent(elem.getAttribute('data-name'));
+            submitSearch();
+            document.body.scrollTop = document.documentElement.scrollTop = 0;
+        }
+    });
 };
