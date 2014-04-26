@@ -53,11 +53,12 @@ var last403 = 0;
  * @return {XMLHttpRequest}
  *   The request object.
  */
-function loadAjax(url, callback, err) {
+function loadAjax(url, callback, complete) {
   url = url + (/\?/g.test(url) ? '&' : '?') + 'client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET;
-  var xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest(), success = false;
   xhr.onreadystatechange = function () {
     if (xhr.readyState === xhr.DONE) {
+      // Request completed successfully
       if (xhr.status === 200 || xhr.status === 0) {
         try {
           var json = JSON.parse(xhr.responseText);
@@ -66,11 +67,13 @@ function loadAjax(url, callback, err) {
         catch (e) {
           callback(xhr.responseText);
         }
+        success = true;
       }
-      else if (xhr.status === 204) {
+      // Requested repo is empty (204) or still being created (409); ignore
+      else if (xhr.status === 204 || xhr.status === 409) {
         console.info('Request to ' + url + ' returned 204 No Content. This usually means the requested repo is empty.');
-        err(xhr);
       }
+      // For our uses, 403 usually indicates a rate limiting error
       else if (xhr.status === 403) {
         try {
           var response = JSON.parse(xhr.responseText);
@@ -84,17 +87,24 @@ function loadAjax(url, callback, err) {
         catch (e) {
           console.error('Request to ' + url + ' denied: ' + xhr.responseText);
         }
-        finally {
-          err(xhr);
-        }
       }
+      else if (xhr.status > 499) {
+        console.error('Request to ' + url + ' failed with code ' + xhr.status + ' because of a server error.');
+      }
+      // Browsers seem to handle 304 as serving a 200 from the cache.
+      // 301, 302, and 307 will automatically be followed.
+      // Other known possible status codes:
+      // 201 (resource created; we're not doing that here)
+      // 202 (request to fork repo accepted; we're not doing that here)
+      // 205 (notifications marked as read; we're not doing that here)
+      // 401 (invalid login)
+      // 400 or 422 (invalid request parameters)
+      // 404 (hidden data or endpoint does not exist)
+      // 405 (merge cannot be performed; we're not doing that here)
       else {
         console.error('Unable to load [' + url + '] [' + xhr.status + ']');
-        if (window.NOISY) {
-          alert('Unable to load [' + url + '] [' + xhr.status + ']');
-        }
-        err(xhr);
       }
+      if (typeof complete === 'function') complete(xhr, success, url);
     }
   };
 
@@ -285,8 +295,6 @@ function submitSearch(event) {
       var f = followings[i];
       connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWS));
     }
-    found.FOLLOWS = true;
-    checkDone();
   }, function() {
     found.FOLLOWS = true;
     checkDone();
@@ -296,8 +304,6 @@ function submitSearch(event) {
       var f = followers[i];
       connections.add(new Node(f.login, f.html_url, Node.TYPES.FOLLOWER));
     }
-    found.FOLLOWER = true;
-    checkDone();
   }, function() {
     found.FOLLOWER = true;
     checkDone();
@@ -314,16 +320,19 @@ function submitSearch(event) {
           var m = members[j];
           connections.add(new Node(m.login, m.html_url, Node.TYPES.COLLEAGUE));
         }
-        if (++numDone >= l) {
-          found.COLLEAGUE = true;
-          checkDone();
-        }
       }, function() {
         if (++numDone >= l) {
           found.COLLEAGUE = true;
           checkDone();
         }
       });
+    }
+  }, function(xhr, success) {
+    // If we didn't run the success callback, something's wrong,
+    // but we should bail on this section and display the results we have anyway.
+    if (!success) {
+      found.COLLEAGUE = true;
+      checkDone();
     }
   });
   loadAjax('https://api.github.com/users/' + username + '/repos?type=all', function(repos) {
@@ -344,11 +353,6 @@ function submitSearch(event) {
             var m = collaborators[j];
             connections.add(new Node(m.login, m.html_url, type));
           }
-          if (++numDone >= l) {
-            found.COLLABORATOR = true;
-            found.CONTRIBUTOR = true;
-            checkDone();
-          }
         }, function() {
           if (++numDone >= l) {
             found.COLLABORATOR = true;
@@ -357,6 +361,14 @@ function submitSearch(event) {
           }
         });
       })(repos[i].fork);
+    }
+  }, function(xhr, success) {
+    // If we didn't run the success callback, something's wrong,
+    // but we should bail on this section and display the results we have anyway.
+    if (!success) {
+      found.COLLABORATOR = true;
+      found.CONTRIBUTOR = true;
+      checkDone();
     }
   });
 }

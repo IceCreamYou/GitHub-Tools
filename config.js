@@ -13,12 +13,6 @@ CLIENT_ID = '';
 CLIENT_SECRET = '';
 
 /**
- * Whether to pop up an alert when a GitHub API request fails.
- * Either way the error will be logged to the console.
- */
-NOISY = false;
-
-/**
  * Set how relatively important each kind of connection is.
  */
 WEIGHTS = {
