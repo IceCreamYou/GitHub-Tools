@@ -1,4 +1,19 @@
 /**
+ * Aggregate statistics about users' repositories.
+ *
+ *
+ * TODO: Figure out how to capture commits to repos the searched user doesn't
+ *   maintain. One way may be to search through issues using ?involves:
+ *   https://developer.github.com/v3/search/#search-issues
+ *   It may also be the case that (1) all repos you have commit access to show
+ *   up at /user/:name/repos, (2) all repos for orgs you're not in that you've
+ *   landed commits in require having a fork, and (3) it might be possible to
+ *   commit to org repos without those showing up at /user/:name/repos if
+ *   you're in the org. So, we can follow those paths to get the relevant repos.
+ *   But, need to make sure not to double-count commits merged from a fork.
+ */
+
+/**
  * Convert a number to a human-friendly string, e.g. 1000000 -> '1,000,000'.
  */
 function putCommas(x) {
