@@ -167,7 +167,6 @@ Node.TYPES = {
   COLLABORATOR: 'shared commit access',
   COLLEAGUE: 'in the same organization',
   CONTRIBUTOR: 'this user contributed to a repo %user maintains',
-  CONTRIBUTEE: 'this user maintains a repo %user contributed to',
   ISSUE_PARTICIPANT: 'participated in same issues',
   FOLLOWED_REPO_MAINTAINER: 'maintains a repo %user follows',
   REPO_FOLLOWER: 'follows repos %user maintains',
@@ -226,7 +225,6 @@ function submitSearch(event) {
     COLLABORATOR: false,
     COLLEAGUE: false,
     CONTRIBUTOR: false,
-    //CONTRIBUTEE: false, // (retired; same as collaborator/contributor)
     //ISSUE_PARTICIPANT: false, // (infeasible for now)
     //FOLLOWED_REPO_MAINTAINER: false, // starred_url, subscriptions_url (not a significant source of knowledge)
     //REPO_FOLLOWER: false, // repos -> followers (infeasible for now)
