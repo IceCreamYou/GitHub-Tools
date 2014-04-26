@@ -1,9 +1,9 @@
 Tools for finding out information about users on GitHub. Currently there are
 two:
 
- - [GitHub Connections](https://icecreamyou.github.io/github-connections)
+ - [GitHub Connections](https://icecreamyou.github.io/GitHub-Tools)
    shows users who another user might know via a real-world relationship
- - [GitHub Lines of Code](https://icecreamyou.github.io/github-connections/loc.html)
+ - [GitHub Lines of Code](https://icecreamyou.github.io/GitHub-Tools/loc.html)
    shows aggregate statistics about users' repositories
 
 Click the links above to try demos.
@@ -16,7 +16,7 @@ You should authenticate with Github to raise API rate limits from 60/hr to
 the following values:
 
  - **Application name:** GitHub Tools
- - **Homepage URL:** *your URL, e.g. `http://localhost/` or `https://icecreamyou.github.io/github-connections`*
+ - **Homepage URL:** *your URL, e.g. `http://localhost/` or `https://icecreamyou.github.io/GitHub-Tools`*
  - **Description:** *up to you, or just leave this blank*
  - **Authorization callback URL:** *this isn't used so just pick something like `http://localhost/oauth`*
 
@@ -25,12 +25,12 @@ up your own instance of GitHub Tools, copy-paste those values into `config.js`.
 Otherwise, change the URL of this page to include the values like this,
 replacing `CLIENT_ID` and `CLIENT_SECRET` with your corresponding tokens:
 
-    https://icecreamyou.github.io/github-connections/?client_id=CLIENT_ID&amp;client_secret=CLIENT_SECRET
+    https://icecreamyou.github.io/GitHub-Tools/?client_id=CLIENT_ID&amp;client_secret=CLIENT_SECRET
 
 ## Notes
 
 You can automatically search for a user using the `user` URL parameter. For
-example, `https://icecreamyou.github.io/github-connections/?user=IceCreamYou`
+example, `https://icecreamyou.github.io/GitHub-Tools/?user=IceCreamYou`
 will automatically search for users similar to IceCreamYou.
 
 GitHub's API rate limits constrain the possible kinds of analyses, so don't

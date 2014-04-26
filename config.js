@@ -5,7 +5,7 @@
  * https://github.com/settings/applications/new using the following values:
  *
  * - Application name: GitHub Tools
- * - Homepage URL: your URL, e.g. http://localhost/ or https://icecreamyou.github.io/github-connections
+ * - Homepage URL: your URL, e.g. http://localhost/ or https://icecreamyou.github.io/GitHub-Tools
  * - Description: up to you, or just leave this blank
  * - Authorization callback URL: this isn't used so just pick something like http://localhost/oauth
  */

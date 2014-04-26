@@ -2,11 +2,11 @@
   "name": "GitHubTools",
   "version": "1.1.0",
   "description": "Tools for finding out information about users on GitHub. Shows users who another user might know and aggregate statistics about users' repositories.",
-  "homepage": "https://github.com/IceCreamYou/github-connections",
-  "bugs": "https://github.com/IceCreamYou/github-connections/issues",
+  "homepage": "https://github.com/IceCreamYou/GitHub-Tools",
+  "bugs": "https://github.com/IceCreamYou/GitHub-Tools/issues",
   "repository": {
     "type": "git",
-    "url": "git://github.com/IceCreamYou/github-connections.git"
+    "url": "git@github.com:IceCreamYou/GitHub-Tools.git"
   },
   "keywords": [
     "GitHub",
@@ -14,7 +14,9 @@
     "network",
     "recruiting",
     "statistics",
-    "lines of code"
+    "lines of code",
+    "LOC",
+    "tools"
   ],
   "author": "Isaac Sukin (http://www.isaacsukin.com/)",
   "license": "MIT",
