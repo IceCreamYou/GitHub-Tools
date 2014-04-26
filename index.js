@@ -1,6 +1,12 @@
 /**
  * Get users who are related to another user on GitHub.
  *
+ * TODO: Add a multiplier field to Node types for contributors (commit count)
+ *   and colleagues (inverse of people in the organization)
+ * TODO: Figure out how to capture commits to repos the principal doesn't
+ *   maintain. One way may be to search through issues using ?involves:
+ *   https://developer.github.com/v3/search/#search-issues
+ * TODO: Follow pagination if there are too many results for queries
  * TODO: Set up a server to authenticate people for the demo without exposing
  *   my client secret. Resources:
  *   http://developer.github.com/v3/oauth/
