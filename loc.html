@@ -2,23 +2,23 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html;charset=utf-8">
-  <title>GitHub Connections</title>
+  <title>GitHub Lines of Code</title>
   <link href="index.css" media="all" rel="stylesheet" />
 </head>
-<body class="connections">
+<body class="loc">
   <div id="main">
-    <h1>GitHub Connections</h1>
+    <h1>GitHub Lines of Code</h1>
     <div id="info">
       You should authenticate with Github to raise API rate limits from 60/hr to 5000/hr.
       To do so, <a href="https://github.com/settings/applications/new" target="_blank">create a new application</a> using the following values:
       <ul>
-        <li><strong>Application name:</strong> GitHub Connections</li>
+        <li><strong>Application name:</strong> GitHub Lines of Code</li>
         <li><strong>Homepage URL:</strong> <em>your URL, e.g. http://localhost/ or https://icecreamyou.github.io/github-connections</em></li>
         <li><strong>Description:</strong> <em>up to you, or just leave this blank</em></li>
         <li><strong>Authorization callback URL:</strong> <em>this isn't used so just pick something like http://localhost/oauth</em></li>
       </ul>
       When you're done, you'll get a client ID and client secret.
-      If you're setting up your own instance of GitHub Connections, copy-paste those values into <code>config.js</code>.
+      If you're setting up your own instance of GitHub Lines of Code, copy-paste those values into <code>config.js</code>.
       Otherwise, change the URL of this page to include the values like this,
       replacing <code>CLIENT_ID</code> and <code>CLIENT_SECRET</code> with your corresponding tokens:
       <pre id="here">https://icecreamyou.github.io/github-connections/?client_id=CLIENT_ID&amp;client_secret=CLIENT_SECRET</pre>
@@ -32,11 +32,22 @@
       </div>
       <div id="search-results"></div>
     </form>
+    <div id="disclaimer">
+      Note that "lines of code" by itself is a very weak measure of experience
+      at best, and not an indicator of quality. Different programming languages
+      have orders of magnitude different verbosity, and well-designed code is
+      often less verbose than poorly-designed code. Additionally, this page
+      counts comments, documentation, and other non-code text in its accounting.
+      It also counts libraries included directly in a repository and
+      automatically generated build files (for example, concatenated or
+      minified JavaScript) so not all of the code counted here was written by
+      the user in question.
+    </div>
     <div id="results">
     </div>
   </div>
   <script src="config.js"></script>
   <script src="common.js"></script>
-  <script src="connections.js"></script>
+  <script src="loc.js"></script>
 </body>
 </html>

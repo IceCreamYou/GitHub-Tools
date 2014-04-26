@@ -32,6 +32,14 @@ h1 {
   margin: 30px 0;
   padding: 20px;
 }
+#disclaimer {
+  background-color: #EEE3E3;
+  border: 1px solid #333333;
+  font-size: 15.5px;
+  line-height: 23px;
+  margin: 30px 0;
+  padding: 20px;
+}
 #here {
   overflow-x: auto;
 }
@@ -67,6 +75,14 @@ input {
   background-color: #E6E6E6;
   cursor: pointer;
 }
+.summary {
+  background-color: #E9F2F5;
+  border: 1px solid #333333;
+  font-family: monospace;
+  margin: 30px 0;
+  padding: 20px;
+  text-align: center;
+}
 #results {
   clear: both;
   margin-top: 30px;
@@ -85,6 +101,9 @@ input {
   padding: 10px 58px 10px 20px;
   position: relative;
 }
+.loc #results li {
+  padding-right: 20px;
+}
 #results li:nth-child(2n) {
   background-color: #D6D6D6;
 }
@@ -94,10 +113,34 @@ input {
 a, a:visited {
   color: #2244CC;
 }
-.why {
+.why, .fork, .repo-stats {
   color: #555555;
   font-size: 20px;
   font-style: italic;
+  padding-left: 0.5em;
+}
+.fork, .repo-stats {
+  font-style: normal;
+}
+.repo-stats {
+  float: right;
+}
+.repo-stats span {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  display: inline-block;
+  padding-left: 0.5em;
+  width: 105px;
+}
+.added {
+  color: #004400;
+}
+.removed {
+  color: #660000;
+}
+.total {
+  font-weight: bold;
 }
 .search-user {
   cursor: pointer;

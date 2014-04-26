@@ -3,7 +3,7 @@
  *
  * TODO: Add a multiplier field to Node types for contributors (commit count)
  *   and colleagues (inverse of people in the organization)
- * TODO: Figure out how to capture commits to repos the principal doesn't
+ * TODO: Figure out how to capture commits to repos the searched user doesn't
  *   maintain. One way may be to search through issues using ?involves:
  *   https://developer.github.com/v3/search/#search-issues
  *   It may also be the case that (1) all repos you have commit access to show
@@ -20,140 +20,6 @@
  * TODO: Several types of network analysis are currently not performed because
  *   they are too expensive in terms of number of API queries.
  */
-
-// Get the client ID and secret from the URL if they're not provided in config.
-// This lets people try the demo.
-(function() {
-    var matches;
-    if (!window.CLIENT_ID) {
-        matches = /[?&]client_id=([^&#]+)/.exec(location.search);
-        if (matches && matches[1]) {
-            window.CLIENT_ID = matches[1];
-        }
-        else {
-            window.CLIENT_ID = '';
-        }
-    }
-    if (!window.CLIENT_SECRET) {
-        matches = /[?&]client_secret=([^&#]+)/.exec(location.search);
-        if (matches && matches[1]) {
-            window.CLIENT_SECRET = matches[1];
-        }
-        else {
-            window.CLIENT_SECRET = '';
-        }
-    }
-})();
-
-var last403 = 0;
-
-/**
- * Request an API resource from GitHub.
- *
- * @param {String} url
- *   The URL to request. The client ID and secret will be appended.
- * @param {Function} callback
- *   A function to execute after the resource is loaded.
- *
- * @return {XMLHttpRequest}
- *   The request object.
- */
-function loadAjax(url, callback, complete) {
-    url = url + (/\?/g.test(url) ? '&' : '?') + 'client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET;
-    var xhr = new XMLHttpRequest(), success = false;
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === xhr.DONE) {
-            // Request completed successfully
-            if (xhr.status === 200 || xhr.status === 0) {
-                try {
-                    var json = JSON.parse(xhr.responseText);
-                    callback(json);
-                }
-                catch (e) {
-                    callback(xhr.responseText);
-                }
-                success = true;
-            }
-            // Requested repo is empty (204) or still being created (409); ignore
-            else if (xhr.status === 204 || xhr.status === 409) {
-                console.info('Request to ' + url + ' returned 204 No Content. This usually means the requested repo is empty.');
-            }
-            // For our uses, 403 usually indicates a rate limiting error
-            else if (xhr.status === 403) {
-                try {
-                    var response = JSON.parse(xhr.responseText);
-                    console.error('Request to ' + url + ' denied: ' + response.message);
-                    var now = Date.now();
-                    if (now - last403 > 3000) {
-                        last403 = now;
-                        alert(response.message);
-                    }
-                }
-                catch (e) {
-                    console.error('Request to ' + url + ' denied: ' + xhr.responseText);
-                }
-            }
-            else if (xhr.status > 499) {
-                console.error('Request to ' + url + ' failed with code ' + xhr.status + ' because of a server error.');
-            }
-            // Browsers seem to handle 304 as serving a 200 from the cache.
-            // 301, 302, and 307 will automatically be followed.
-            // Other known possible status codes:
-            // 201 (resource created; we're not doing that here)
-            // 202 (request accepted but performed asynchronously and can't return immediately)
-            // 205 (notifications marked as read; we're not doing that here)
-            // 401 (invalid login)
-            // 400 or 422 (invalid request parameters)
-            // 404 (hidden data or endpoint does not exist)
-            // 405 (merge cannot be performed; we're not doing that here)
-            else {
-                console.error('Unable to load [' + url + '] [' + xhr.status + ']');
-            }
-            if (typeof complete === 'function') complete(xhr, success, url);
-        }
-    };
-
-    xhr.open('GET', url, true);
-    xhr.send(null);
-    return xhr;
-}
-
-/**
- * HTML-escape a string.
- */
-function sanitize(s) {
-    var d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML.replace(/"/g, '&quot;');
-}
-
-/**
- * Get the top and left coordinates of a DOM element.
- *
- * Copied from http://stackoverflow.com/a/16752864/843621
- * This is slightly wrong -- see http://stackoverflow.com/q/442404/843621 for
- * correct versions -- but it does the job.
- *
- * @param {HTMLElement} ele
- *   The element for which to get coordinates.
- *
- * @return {Number[]}
- *   A two-element array containing the left and top pixel coordinates of the
- *   relevant element, respectively.
- */
-function getPos(ele) {
-    var x = 0;
-    var y = 0;
-    while (true) {
-        x += ele.offsetLeft;
-        y += ele.offsetTop;
-        if (ele.offsetParent === null) {
-            break;
-        }
-        ele = ele.offsetParent;
-    }
-    return [x, y];
-}
 
 /**
  * A GitHub user.
@@ -234,11 +100,7 @@ Set.prototype.foreach = function(callback, num) {
 /**
  * Get the requested user's GitHub connections.
  */
-function submitSearch(event) {
-    if (event) event.preventDefault();
-    document.getElementById('search-results').style.display = 'none';
-    var searchValue = document.getElementById('username-field').value;
-    var username = encodeURIComponent(searchValue);
+function process(searchValue, username) {
     var connections = new Set(searchValue);
     var found = {
         FOLLOWS: false,
@@ -289,7 +151,7 @@ function submitSearch(event) {
                     s.push(types[key]);
                 }
             }
-            output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a> <span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
+            output.push('<li><a href="' + sanitize(node.url) + '" target="_blank">' + sanitize(node.name) + '</a><span class="why">(' + s.join('; ').replace(/%user/g, sanitize(searchValue)) + ')</span><img src="icon-search.svg" alt="Search this user" class="search-user" data-name="' + encodeURIComponent(node.name) + '" /></li>');
         }, NUM_RESULTS);
         output.push('</ul>');
         document.getElementById('results').innerHTML = output.join("\n");
@@ -349,7 +211,7 @@ function submitSearch(event) {
         for (var i = 0, numDone = 0, l = repos.length; i < l; i++) {
             (function(fork) {
                 // For forks we want the people with commit access to the *fork*, i.e. /collaborators.
-                // For forks, /contributors shows everyone who has landed commits in the original repo, and the principal doesn't necessarily know them.
+                // For forks, /contributors shows everyone who has landed commits in the original repo, and the searched user doesn't necessarily know them.
                 // Not all collaborators are necessarily contributors; just because you have commit access doesn't mean you've committed.
                 // However, I think it's safe to assume that we'll capture the important relationships via /contributors for non-forks.
                 loadAjax('https://api.github.com/repos/' + repos[i].full_name + (fork ? '/collaborators' : '/contributors'), function(collaborators) {
@@ -378,79 +240,7 @@ function submitSearch(event) {
     });
 }
 
-window.onload = function() {
-    document.getElementById('here').textContent = location.href + (/\?/g.test(location.href) ? '&' : '?') + 'client_id=CLIENT_ID&client_secret=CLIENT_SECRET';
-    if (window.CLIENT_ID && window.CLIENT_SECRET) {
-        document.getElementById('info').style.display = 'none';
-    }
-
-    var elem = document.getElementById('username-field'),
-        move = document.getElementById('search-results');
-    var o = getPos(elem);
-    move.style.position = 'absolute';
-    move.style.left = o[0] + 'px';
-    move.style.top = (o[1] + elem.offsetHeight) + 'px';
-
-    var matches = /[?&]user=([^&#]+)/.exec(location.search);
-    if (matches && matches[1]) {
-        document.getElementById('username-field').value = matches[1];
-        submitSearch();
-    }
-
-    document.getElementById('search-form').addEventListener('submit', submitSearch);
-
-    var lastTimeout = null,
-        lastXHR = null,
-        lastInput = '';
-    document.getElementById('search-form').addEventListener('keyup', function(event) {
-        event.preventDefault();
-        var div = document.getElementById('search-results');
-        var searchValue = document.getElementById('username-field').value;
-        if (searchValue.length < 2) {
-            if (lastTimeout) clearTimeout(lastTimeout);
-            if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
-            div.style.display = 'none';
-            return;
-        }
-        if (searchValue === lastInput) {
-            return;
-        }
-        lastInput = searchValue;
-        var username = encodeURIComponent(searchValue);
-
-        if (lastTimeout) clearTimeout(lastTimeout);
-        lastTimeout = setTimeout(function() {
-            if (lastXHR && lastXHR.readyState !== lastXHR.DONE) lastXHR.abort();
-            lastXHR = loadAjax('https://api.github.com/search/users?per_page=10&q=' + username, function(results) {
-                var users = [];
-                for (var i = 0, l = results.items.length; i < l; i++) {
-                    var u = results.items[i], n = sanitize(u.login);
-                    users.push('<div class="suggestion" data-name="' + encodeURIComponent(u.login) + '"><img src="' + sanitize(u.avatar_url) + '" alt="' + n + '\'s avatar" /><span class="suggest-name">' + n + '</span></div>');
-                }
-                if (users.length) {
-                    div.innerHTML = users.join('');
-                    div.style.display = 'block';
-                }
-                else {
-                    div.style.display = 'none';
-                }
-            });
-        }, 250);
-    });
-
-    document.getElementById('search-results').addEventListener('click', function(event) {
-        event.preventDefault();
-        var elem = event.target;
-        if (elem && elem.nodeName.toLowerCase() != 'div') {
-            elem = elem.parentNode;
-        }
-        if (elem.nodeName.toLowerCase() == 'div' && ~elem.className.indexOf('suggestion')) {
-            document.getElementById('username-field').value = decodeURIComponent(elem.getAttribute('data-name'));
-            this.style.display = 'none';
-            submitSearch();
-        }
-    });
-
+function setup() {
     document.getElementById('results').addEventListener('click', function(event) {
         event.preventDefault();
         var elem = event.target;
@@ -460,4 +250,4 @@ window.onload = function() {
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         }
     });
-};
+}
