@@ -208,7 +208,7 @@ window.onload = function() {
                 var users = [];
                 for (var i = 0, l = results.items.length; i < l; i++) {
                     var u = results.items[i], n = sanitize(u.login);
-                    users.push('<div class="suggestion" data-name="' + encodeURIComponent(u.login) + '"><img src="' + sanitize(u.avatar_url) + '" alt="' + n + '\'s avatar" /><span class="suggest-name">' + n + '</span></div>');
+                    users.push('<div class="suggestion" data-name="' + encodeURIComponent(u.login) + '"><img src="' + sanitize(u.avatar_url + 's=16') + '" alt="' + n + '\'s avatar" /><span class="suggest-name">' + n + '</span></div>');
                 }
                 if (users.length) {
                     div.innerHTML = users.join('');
